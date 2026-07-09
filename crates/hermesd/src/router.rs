@@ -1,10 +1,12 @@
 use crate::{state::ServerState, user::User};
 use common::relay_message;
 use protocol::{Command, Request};
+use std::sync::Arc;
+use tokio::sync::Mutex;
 
 pub async fn route_request(
     user: &User,
-    server_state: &ServerState,
+    server_state: &Arc<Mutex<ServerState>>,
     request: Request,
 ) -> Result<(), String> {
     match request.command {
@@ -17,12 +19,17 @@ pub async fn route_request(
 
 async fn send_to_peer(
     user: &User,
-    server_state: &ServerState,
+    server_state: &Arc<Mutex<ServerState>>,
     request: Request,
 ) -> Result<(), String> {
-    let writer = server_state.get_writer(&request.target)?;
-    let mut writer = writer.lock().await;
+    let writer = {
+        let state = server_state.lock().await;
+        state.get_writer(&request.target)?
+    };
+
     let msg = format!("{}: {}", user.name, request.message);
+
+    let mut writer = writer.lock().await;
     relay_message(&mut writer, &msg)
         .await
         .map_err(|e| e.to_string())?;
@@ -32,7 +39,7 @@ async fn send_to_peer(
 
 async fn send_to_room(
     _user: &User,
-    _server_state: &ServerState,
+    _server_state: &Arc<Mutex<ServerState>>,
     _request: Request,
 ) -> Result<(), String> {
     unimplemented!()

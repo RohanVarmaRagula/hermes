@@ -18,12 +18,14 @@ impl ServerState {
             return Err(format!("username `{}` already exists", user.name));
         }
 
+        println!("{} joined", user.name);
         self.users.insert(user.name.clone(), user);
         Ok(())
     }
 
     pub fn remove_user(&mut self, name: &str) {
         self.users.remove(name);
+        println!("{} left", name);
     }
 
     pub fn get_writer(&self, name: &str) -> Result<Arc<Mutex<OwnedWriteHalf>>, String> {

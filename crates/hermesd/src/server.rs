@@ -1,5 +1,6 @@
 use crate::{router, state::ServerState, user::User};
 use common::recv;
+use protocol::{Command, Request};
 use std::{io::Result, sync::Arc};
 use tokio::{
     net::{TcpListener, TcpStream},
@@ -10,7 +11,6 @@ async fn process_socket(socket: TcpStream, state: Arc<Mutex<ServerState>>) -> Re
     let (mut read_h, write_h) = socket.into_split();
     let request = recv(&mut read_h).await?;
     let user = User::new(request.target.clone(), Arc::new(Mutex::new(write_h)));
-
     {
         let mut server_state = state.lock().await;
         server_state
@@ -18,16 +18,26 @@ async fn process_socket(socket: TcpStream, state: Arc<Mutex<ServerState>>) -> Re
             .map_err(std::io::Error::other)?;
     }
     loop {
-        let request = match recv(&mut read_h).await {
-            Ok(r) => r,
-            Err(_) => break,
+        match recv(&mut read_h).await {
+            Ok(request) => {
+                if let Err(e) = router::route_request(&user, &state, request).await {
+                    router::route_request(
+                        &user,
+                        &state,
+                        Request::new(Command::SendToPeer, user.name.to_string(), e.to_string()),
+                    )
+                    .await
+                    .unwrap();
+                }
+            }
+            Err(_) => {
+                {
+                    let mut server_state = state.lock().await;
+                    server_state.remove_user(&user.name);
+                }
+                break;
+            }
         };
-
-        let server_state = state.lock().await;
-
-        if let Err(e) = router::route_request(&user, &server_state, request).await {
-            eprint!("{e}");
-        }
     }
 
     Ok(())
