@@ -8,10 +8,7 @@ pub struct User {
 }
 
 impl User {
-    pub fn new(
-        name: String, 
-        writer: Arc<Mutex<OwnedWriteHalf>>
-    ) -> Self {
+    pub fn new(name: String, writer: Arc<Mutex<OwnedWriteHalf>>) -> Self {
         Self { name, writer }
     }
 }

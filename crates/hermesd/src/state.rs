@@ -1,12 +1,6 @@
-use std::{
-    collections::HashMap,
-    sync::Arc,
-};
-use tokio::{
-    net::tcp::OwnedWriteHalf,
-    sync::Mutex,
-};
 use crate::user::User;
+use std::{collections::HashMap, sync::Arc};
+use tokio::{net::tcp::OwnedWriteHalf, sync::Mutex};
 
 pub struct ServerState {
     users: HashMap<String, User>,
@@ -32,7 +26,7 @@ impl ServerState {
         self.users.remove(name);
     }
 
-    pub fn get_writer(&self, name: &str) -> Result<Arc<Mutex<OwnedWriteHalf>>, String> {        
+    pub fn get_writer(&self, name: &str) -> Result<Arc<Mutex<OwnedWriteHalf>>, String> {
         self.users
             .get(name)
             .map(|u| Arc::clone(&u.writer))
@@ -42,5 +36,4 @@ impl ServerState {
     pub fn has_user(&self, name: &str) -> bool {
         self.users.contains_key(name)
     }
-
 }

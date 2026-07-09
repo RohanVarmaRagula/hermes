@@ -1,6 +1,6 @@
 use std::io::Result;
-mod server;
 mod router;
+mod server;
 mod state;
 mod user;
 

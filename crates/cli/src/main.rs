@@ -4,6 +4,6 @@ mod client;
 #[tokio::main]
 async fn main() -> Result<()> {
     client::run().await?;
-    
+
     Ok(())
 }

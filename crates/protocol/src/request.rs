@@ -40,12 +40,8 @@ impl Request {
                     return Err(String::from("Usage: /name <username>"));
                 }
 
-                Ok(Self::new(
-                    command,
-                    words[1].to_string(),
-                    String::new(),
-                ))
-            },
+                Ok(Self::new(command, words[1].to_string(), String::new()))
+            }
 
             Command::SendToPeer | Command::SendToRoom => {
                 if words.len() < 3 {
@@ -59,11 +55,10 @@ impl Request {
                     words[1].to_string(),
                     words[2..].join(" "),
                 ))
-            },
-            
+            }
+
             Command::Unknown => Err(String::from("Unknown Command")),
         }
-
     }
 
     pub fn to_string(&self) -> Result<String, String> {
@@ -73,7 +68,7 @@ impl Request {
             Command::SendToRoom => "/shout",
             Command::Unknown => return Err(String::from("Unknown Command")),
         };
-        
+
         Ok(format!("{} {} {}", command, self.target, self.message))
     }
 }
