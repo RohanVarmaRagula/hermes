@@ -1,6 +1,9 @@
-[package]
-name = "hermes"
-version = "0.1.0"
-edition = "2024"
+[workspace]
+resolver = "3"
 
-[dependencies]
+members = [
+    "crates/cli",
+    "crates/protocol", 
+    "crates/hermesd", 
+    "crates/common",
+]
