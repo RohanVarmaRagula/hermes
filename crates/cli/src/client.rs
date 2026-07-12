@@ -1,6 +1,6 @@
-use std::env;
 use common::{recv_relay_message, send};
 use protocol::Request;
+use std::env;
 use std::io::{Result, Write};
 use tokio::{
     io::{self, AsyncBufReadExt, BufReader},
