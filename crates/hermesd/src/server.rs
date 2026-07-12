@@ -1,3 +1,4 @@
+use std::env;
 use crate::{router, state::ServerState, user::User};
 use common::recv;
 use protocol::{Command, Request};
@@ -46,7 +47,13 @@ async fn process_socket(socket: TcpStream, state: Arc<Mutex<ServerState>>) -> Re
 pub async fn run() -> Result<()> {
     let state = Arc::new(Mutex::new(ServerState::new()));
 
-    let listener = TcpListener::bind("127.0.0.1:8080").await?;
+    let args: Vec<String> = env::args().collect();
+    let addr = if args.len() < 2 {
+        "0.0.0.0:8080"
+    } else {
+        &args[1]
+    };
+    let listener = TcpListener::bind(addr).await?;
     println!("Server is listening on {:?}", listener.local_addr()?);
 
     loop {

@@ -1,3 +1,4 @@
+use std::env;
 use common::{recv_relay_message, send};
 use protocol::Request;
 use std::io::{Result, Write};
@@ -5,6 +6,8 @@ use tokio::{
     io::{self, AsyncBufReadExt, BufReader},
     net::TcpStream,
 };
+
+use crate::client;
 
 async fn process_socket(socket: TcpStream) -> Result<()> {
     let (mut read_h, mut write_h) = socket.into_split();
@@ -78,7 +81,13 @@ async fn process_socket(socket: TcpStream) -> Result<()> {
 }
 
 pub async fn run() -> Result<()> {
-    let socket = TcpStream::connect("127.0.0.1:8080").await?;
+    let args: Vec<String> = env::args().collect();
+    let addr = if args.len() < 2 {
+        "127.0.0.1:8080"
+    } else {
+        &args[1]
+    };
+    let socket = TcpStream::connect(addr).await?;
     println!("Connected to server");
 
     process_socket(socket).await
