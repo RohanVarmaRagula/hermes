@@ -5,6 +5,6 @@ mod ui;
 #[tokio::main]
 async fn main() -> Result<()> {
     // client::run().await?;
-    ui::render::run()?;
+    ui::run::run()?;
     Ok(())
 }

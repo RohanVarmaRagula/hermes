@@ -1,109 +1,74 @@
+// draws the ui
+
 use ratatui::{
-    layout::{Constraint, Layout}, style::{Style, Styled}, text::Line, widgets::{Block, List},
+    layout::{Constraint, Layout}, widgets::List,
 };
-use crate::ui::theme::{*};
+use crate::ui::{app::Focus, render::*, settings::*};
 use crate::ui::app::App;
 
 pub fn draw(frame: &mut ratatui::Frame, app: &mut App) {
     // Layout
     let [left, right] =
-        Layout::horizontal([Constraint::Percentage(20), Constraint::Fill(1)]).areas(frame.area());
+        Layout::horizontal([
+            Constraint::Percentage(CONTACTS_HORIZONTAL_PERCENTAGE), 
+            Constraint::Percentage(CHAT_AREA_HORIZONTAL_PERCENTAGE)
+            ]).areas(frame.area());
 
-    let [chat, input_box] =
-        Layout::vertical([Constraint::Percentage(90), Constraint::Fill(1)]).areas(right);
+    let [peer_contact_list_area, room_contact_list_area] = 
+        Layout::vertical([
+            Constraint::Fill(1), 
+            Constraint::Fill(1)
+        ]).areas(left);
+
+    let [chat_area, input_box_area] =
+        Layout::vertical([
+            Constraint::Percentage(CHAT_AREA_VERTICAL_PERCENTAGE), 
+            Constraint::Percentage(INPUT_BOX_VERTICAL_PERCENTAGE)
+        ]).areas(right);
+
+    // set state
+    app.set_peer_contact_list_area(peer_contact_list_area);
+    app.set_room_contact_list_area(room_contact_list_area);
+    app.set_chat_area(chat_area);
+    app.set_input_box_area(input_box_area);
 
     // widgets: left
     // widgets: left // contacts
 
-    let list = List::new(app.contacts.items());
+    let peer_list = List::new(app.peer_contacts.items());
+    let room_list = List::new(app.room_contacts.items());
 
     // widgets: rigth // chat
     // widgets: rigth // chat box
     
 
     // render
-    // render: left // contacts
 
-    frame.render_stateful_widget(
-        list
-            .style(
-                Style::default()
-                    .fg(TEXT)
-                    .bg(BG)
-            )
-            .highlight_style(
-                Style::default()
-                    .bg(SURFACE)
-                    .fg(ACTIVE)
-            )
-            .highlight_symbol(">> ")
-            .block(
-                Block::bordered()
-                    .title(
-                        Line::from("Contacts")
-                            .centered()
-                            .style(
-                                Style::default()
-                                    .fg(TITLE)
-                            )
-                    )
-                    .border_style(
-                        Style::default()
-                            .fg(BORDER)
-                    )
-                    .set_style(
-                        Style::default()
-                            .bg(BG)
-                    )
-            ),
-        left, 
-        app.contacts.state_mut()
+    render_peer_contacts(
+        frame, 
+        peer_list, 
+        peer_contact_list_area, 
+        app, 
+        app.focus == Focus::PeerContactsArea
     );
-    
-    // render: right // chat
-    
-    frame.render_widget(
-        Block::bordered()
-            .title(
-                Line::from("Hermes")
-                    .centered()
-                    .style(
-                        Style::default()
-                            .fg(TITLE)
-                    )
-            )
-            .border_style(
-                Style::default()
-                    .fg(BORDER)
-            )
-            .set_style(
-                Style::default()
-                    .bg(BG)
-            ),
-    chat,
+   
+    render_room_contacts(
+        frame,
+        room_list,
+        room_contact_list_area,
+        app,
+        app.focus == Focus::RoomContactsArea
+    );
+        
+    render_chat_area(
+        frame, 
+        chat_area, 
+        app.focus == Focus::ChatArea
     );
 
-    // render: right // chat box
-    
-    frame.render_widget(
-        Block::bordered()
-            .title(
-                Line::from("Type Here")
-                    .centered()
-                    .style(
-                        Style::default()
-                            .fg(TITLE)
-                    )
-            )
-            .border_style(
-                Style::default()
-                    .fg(BORDER)
-            )
-            .set_style(
-                Style::default()
-                    .bg(BG)
-            ),
-        input_box,
+    render_input_box(
+        frame, 
+        input_box_area, 
+        app.focus == Focus::InputBox
     );
-    
 }
