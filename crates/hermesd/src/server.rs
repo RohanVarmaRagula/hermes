@@ -1,6 +1,5 @@
 use crate::{router, state::ServerState, user::User};
 use common::recv;
-use protocol::{Command, Request};
 use std::env;
 use std::{io::Result, sync::Arc};
 use tokio::{
@@ -22,13 +21,7 @@ async fn process_socket(socket: TcpStream, state: Arc<Mutex<ServerState>>) -> Re
         match recv(&mut read_h).await {
             Ok(request) => {
                 if let Err(e) = router::route_request(&user, &state, request).await {
-                    router::route_request(
-                        &user,
-                        &state,
-                        Request::new(Command::SendToPeer, user.name.to_string(), e.to_string()),
-                    )
-                    .await
-                    .unwrap();
+                    eprintln!("{e}")
                 }
             }
             Err(_) => {

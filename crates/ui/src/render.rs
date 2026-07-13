@@ -1,6 +1,12 @@
 // renders each widget
 
-use ratatui::{Frame, layout::Rect, style::{Style, Styled}, text::Line, widgets::{Block, List}};
+use ratatui::{
+    Frame,
+    layout::Rect,
+    style::{Style, Styled},
+    text::Line,
+    widgets::{Block, List},
+};
 
 use crate::{app::App, settings::*};
 
@@ -15,16 +21,8 @@ pub fn render_peer_contacts(
 
     frame.render_stateful_widget(
         peer_list
-            .style(
-                Style::default()
-                    .fg(TEXT)
-                    .bg(BG),
-            )
-            .highlight_style(
-                Style::default()
-                    .bg(SURFACE)
-                    .fg(ACTIVE),
-            )
+            .style(Style::default().fg(TEXT).bg(BG))
+            .highlight_style(Style::default().bg(SURFACE).fg(ACTIVE))
             .highlight_symbol(">> ")
             .block(
                 Block::bordered()
@@ -33,12 +31,8 @@ pub fn render_peer_contacts(
                             .centered()
                             .style(Style::default().fg(TITLE)),
                     )
-                    .border_style(
-                        Style::default().fg(border),
-                    )
-                    .set_style(
-                        Style::default().bg(BG),
-                    ),
+                    .border_style(Style::default().fg(border))
+                    .set_style(Style::default().bg(BG)),
             ),
         area,
         app.peer_contacts.state_mut(),
@@ -56,46 +50,25 @@ pub fn render_room_contacts(
 
     frame.render_stateful_widget(
         room_list
-            .style(
-                Style::default()
-                    .fg(TEXT)
-                    .bg(BG)
-            )
-            .highlight_style(
-                Style::default()
-                    .bg(SURFACE)
-                    .fg(ACTIVE)
-            )
+            .style(Style::default().fg(TEXT).bg(BG))
+            .highlight_style(Style::default().bg(SURFACE).fg(ACTIVE))
             .highlight_symbol(">> ")
             .block(
                 Block::bordered()
                     .title(
                         Line::from("Contacts")
                             .centered()
-                            .style(
-                                Style::default()
-                                    .fg(TITLE)
-                            )
+                            .style(Style::default().fg(TITLE)),
                     )
-                    .border_style(
-                        Style::default()
-                            .fg(border)
-                    )
-                    .set_style(
-                        Style::default()
-                            .bg(BG)
-                    )
+                    .border_style(Style::default().fg(border))
+                    .set_style(Style::default().bg(BG)),
             ),
-        area, 
-        app.room_contacts.state_mut()
+        area,
+        app.room_contacts.state_mut(),
     );
 }
 
-pub fn render_chat_area(
-    frame: &mut Frame,
-    area: Rect,
-    highlight: bool,
-) {
+pub fn render_chat_area(frame: &mut Frame, area: Rect, highlight: bool) {
     let border = if highlight { ACTIVE } else { BORDER };
 
     frame.render_widget(
@@ -103,29 +76,15 @@ pub fn render_chat_area(
             .title(
                 Line::from("Hermes")
                     .centered()
-                    .style(
-                        Style::default()
-                            .fg(TITLE)
-                    )
+                    .style(Style::default().fg(TITLE)),
             )
-            .border_style(
-                Style::default()
-                    .fg(border)
-            )
-            .set_style(
-                Style::default()
-                    .bg(BG)
-            ),
-    area,
+            .border_style(Style::default().fg(border))
+            .set_style(Style::default().bg(BG)),
+        area,
     );
-
 }
 
-pub fn render_input_box(
-    frame: &mut Frame,
-    area: Rect,
-    highlight: bool
-) {
+pub fn render_input_box(frame: &mut Frame, area: Rect, highlight: bool) {
     let border = if highlight { ACTIVE } else { BORDER };
 
     frame.render_widget(
@@ -133,20 +92,10 @@ pub fn render_input_box(
             .title(
                 Line::from("Type Here")
                     .centered()
-                    .style(
-                        Style::default()
-                            .fg(TITLE)
-                    )
+                    .style(Style::default().fg(TITLE)),
             )
-            .border_style(
-                Style::default()
-                    .fg(border)
-            )
-            .set_style(
-                Style::default()
-                    .bg(BG)
-            ),
+            .border_style(Style::default().fg(border))
+            .set_style(Style::default().bg(BG)),
         area,
     );
-    
 }

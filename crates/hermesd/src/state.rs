@@ -35,6 +35,7 @@ impl ServerState {
             .ok_or_else(|| format!("username `{name}` not found"))
     }
 
+    #[allow(dead_code)]
     pub fn has_user(&self, name: &str) -> bool {
         self.users.contains_key(name)
     }

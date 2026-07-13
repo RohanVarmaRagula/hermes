@@ -1,7 +1,7 @@
 // state of the ui
 
+use crate::contacts::{PeerContacts, RoomContacts};
 use ratatui::layout::{Position, Rect};
-use crate::contacts::{RoomContacts, PeerContacts};
 
 #[derive(PartialEq)]
 pub enum Focus {
@@ -27,10 +27,30 @@ impl App {
             peer_contacts: PeerContacts::example(),
             room_contacts: RoomContacts::example(),
             focus: Focus::PeerContactsArea,
-            peer_contact_list_area: Rect { x: 0, y: 0, width: 0, height: 0 },
-            room_contact_list_area: Rect { x: 0, y: 0, width: 0, height: 0 }, 
-            chat_area: Rect { x: 0, y: 0, width: 0, height: 0 },
-            input_box_area: Rect { x: 0, y: 0, width: 0, height: 0 }
+            peer_contact_list_area: Rect {
+                x: 0,
+                y: 0,
+                width: 0,
+                height: 0,
+            },
+            room_contact_list_area: Rect {
+                x: 0,
+                y: 0,
+                width: 0,
+                height: 0,
+            },
+            chat_area: Rect {
+                x: 0,
+                y: 0,
+                width: 0,
+                height: 0,
+            },
+            input_box_area: Rect {
+                x: 0,
+                y: 0,
+                width: 0,
+                height: 0,
+            },
         }
     }
 
@@ -58,5 +78,4 @@ impl App {
             self.focus = Focus::InputBox;
         }
     }
-
 }

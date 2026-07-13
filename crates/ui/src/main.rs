@@ -1,14 +1,20 @@
 // run the LOOP
-mod settings;
 mod app;
-mod render;
 mod contacts;
 mod draw;
 mod events;
+mod render;
+mod settings;
 
-use crossterm::{event::{DisableMouseCapture, EnableMouseCapture}, execute};
+use crossterm::{
+    event::{DisableMouseCapture, EnableMouseCapture},
+    execute,
+};
 
-use crate::{app::App, events::{Action, update_state}};
+use crate::{
+    app::App,
+    events::{Action, update_state},
+};
 use std::io;
 
 fn main() -> io::Result<()> {
@@ -19,7 +25,7 @@ fn main() -> io::Result<()> {
 
     loop {
         match update_state(&mut app)? {
-            Action::Continue => {},
+            Action::Continue => {}
             Action::Quit => break,
         }
 

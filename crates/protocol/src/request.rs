@@ -1,3 +1,8 @@
+use std::{
+    fmt::{self, Display},
+    str::FromStr,
+};
+
 pub enum Command {
     SetName,
     SendToPeer,
@@ -7,21 +12,71 @@ pub enum Command {
 
 pub struct Request {
     pub command: Command,
+    pub sender: String,
     pub target: String,
     pub message: String,
 }
 
 impl Request {
-    pub fn new(command: Command, target: String, message: String) -> Self {
+    fn new(command: Command, sender: String, target: String, message: String) -> Self {
         Self {
             command,
+            sender,
             target,
             message,
         }
     }
 
-    pub fn from(text: String) -> Result<Self, String> {
-        let words: Vec<&str> = text.split_whitespace().collect();
+    pub fn set_name(username: impl Into<String>) -> Self {
+        Self::new(
+            Command::SetName,
+            String::new(),
+            username.into(),
+            String::new(),
+        )
+    }
+
+    pub fn send_to_peer(target: impl Into<String>, message: impl Into<String>) -> Self {
+        Self::new(
+            Command::SendToPeer,
+            String::new(),
+            target.into(),
+            message.into(),
+        )
+    }
+
+    pub fn send_to_room(room: impl Into<String>, message: impl Into<String>) -> Self {
+        Self::new(
+            Command::SendToRoom,
+            String::new(),
+            room.into(),
+            message.into(),
+        )
+    }
+}
+
+impl Display for Request {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> fmt::Result {
+        let command = match self.command {
+            Command::SetName => "/name",
+            Command::SendToPeer => "/msg",
+            Command::SendToRoom => "/shout",
+            Command::Unknown => return Err(fmt::Error),
+        };
+
+        write!(
+            f,
+            "{} {} {} {}",
+            command, self.sender, self.target, self.message
+        )
+    }
+}
+
+impl FromStr for Request {
+    type Err = String;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        let words: Vec<&str> = s.split_whitespace().collect();
 
         if words.is_empty() {
             return Err("Empty request".to_string());
@@ -37,38 +92,39 @@ impl Request {
         match command {
             Command::SetName => {
                 if words.len() != 2 {
-                    return Err(String::from("Usage: /name <username>"));
+                    return Err("Usage: /name <username>".to_string());
                 }
 
-                Ok(Self::new(command, words[1].to_string(), String::new()))
+                Ok(Self::set_name(words[1]))
             }
 
-            Command::SendToPeer | Command::SendToRoom => {
-                if words.len() < 3 {
-                    return Err(String::from(
-                        "Unsupported message format. Suggested format: \"<command> <target> <message>\"",
-                    ));
+            Command::SendToPeer => {
+                if words.len() < 4 {
+                    return Err("Usage: /msg <sender> <target> <message>".to_string());
                 }
 
                 Ok(Self::new(
-                    command,
+                    Command::SendToPeer,
                     words[1].to_string(),
-                    words[2..].join(" "),
+                    words[2].to_string(),
+                    words[3..].join(" "),
                 ))
             }
 
-            Command::Unknown => Err(String::from("Unknown Command")),
+            Command::SendToRoom => {
+                if words.len() < 4 {
+                    return Err("Usage: /shout <sender> <room> <message>".to_string());
+                }
+
+                Ok(Self::new(
+                    Command::SendToRoom,
+                    words[1].to_string(),
+                    words[2].to_string(),
+                    words[3..].join(" "),
+                ))
+            }
+
+            Command::Unknown => Err("Unknown Command".to_string()),
         }
-    }
-
-    pub fn to_string(&self) -> Result<String, String> {
-        let command = match self.command {
-            Command::SetName => "/name",
-            Command::SendToPeer => "/msg",
-            Command::SendToRoom => "/shout",
-            Command::Unknown => return Err(String::from("Unknown Command")),
-        };
-
-        Ok(format!("{} {} {}", command, self.target, self.message))
     }
 }
