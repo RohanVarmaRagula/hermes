@@ -3,7 +3,7 @@
 use std::io;
 use crossterm::event::{self, Event, KeyCode, KeyEventKind, MouseButton, MouseEventKind};
 use ratatui::layout::Position;
-use crate::ui::{app::{App, Focus}, events::Action::Continue};
+use crate::{app::{App, Focus}, events::Action::Continue};
 
 pub enum Action {
     Continue,

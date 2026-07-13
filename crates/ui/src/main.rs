@@ -1,11 +1,17 @@
-// runs the LOOP
+// run the LOOP
+mod settings;
+mod app;
+mod render;
+mod contacts;
+mod draw;
+mod events;
 
 use crossterm::{event::{DisableMouseCapture, EnableMouseCapture}, execute};
 
-use crate::ui::{app::App, draw, events::{Action, update_state}};
+use crate::{app::App, events::{Action, update_state}};
 use std::io;
 
-pub fn run() -> io::Result<()> {
+fn main() -> io::Result<()> {
     execute!(io::stdout(), EnableMouseCapture)?;
     let mut terminal = ratatui::init();
 

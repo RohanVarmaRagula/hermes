@@ -2,7 +2,7 @@
 
 use ratatui::{Frame, layout::Rect, style::{Style, Styled}, text::Line, widgets::{Block, List}};
 
-use crate::ui::{app::App, settings::*};
+use crate::{app::App, settings::*};
 
 pub fn render_peer_contacts(
     frame: &mut Frame,

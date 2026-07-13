@@ -3,8 +3,7 @@
 use ratatui::{
     layout::{Constraint, Layout}, widgets::List,
 };
-use crate::ui::{app::Focus, render::*, settings::*};
-use crate::ui::app::App;
+use crate::{app::{Focus, App}, render::*, settings::*};
 
 pub fn draw(frame: &mut ratatui::Frame, app: &mut App) {
     // Layout

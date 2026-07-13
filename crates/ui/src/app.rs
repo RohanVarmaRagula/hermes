@@ -1,7 +1,7 @@
 // state of the ui
 
 use ratatui::layout::{Position, Rect};
-use crate::ui::contacts::{RoomContacts, PeerContacts};
+use crate::contacts::{RoomContacts, PeerContacts};
 
 #[derive(PartialEq)]
 pub enum Focus {
