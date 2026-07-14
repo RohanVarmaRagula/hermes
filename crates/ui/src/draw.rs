@@ -11,6 +11,10 @@ use ratatui::{
 };
 
 pub fn draw(frame: &mut ratatui::Frame, app: &mut App) {
+    if !app.logged_in {
+        render_login(frame, frame.area(), app);
+        return;
+    }
     // Layout
     let [left, right] = Layout::horizontal([
         Constraint::Percentage(CONTACTS_HORIZONTAL_PERCENTAGE),
@@ -62,5 +66,5 @@ pub fn draw(frame: &mut ratatui::Frame, app: &mut App) {
 
     render_chat_area(frame, chat_area, app.focus == Focus::ChatArea);
 
-    render_input_box(frame, input_box_area, app.focus == Focus::InputBox);
+    render_input_box(frame, input_box_area, app, app.focus == Focus::InputBox);
 }

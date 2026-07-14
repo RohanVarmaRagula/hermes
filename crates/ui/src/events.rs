@@ -2,9 +2,10 @@
 
 use crate::{
     app::{App, Focus},
-    events::Action::Continue,
+    contacts::{Contact, ContactType},
 };
 use crossterm::event::{self, Event, KeyCode, KeyEventKind, MouseButton, MouseEventKind};
+use protocol::Request;
 use ratatui::layout::Position;
 use std::io;
 
@@ -13,40 +14,115 @@ pub enum Action {
     Quit,
 }
 
-pub fn update_state(app: &mut App) -> io::Result<Action> {
-    match event::read()? {
+fn handle_event_peer_contact_area(app: &mut App, event: Event) -> io::Result<Action> {
+    match event {
         Event::Key(key) if key.kind == KeyEventKind::Press => match key.code {
-            KeyCode::Esc => return Ok(Action::Quit),
-            KeyCode::Down => match app.focus {
-                Focus::PeerContactsArea => app.peer_contacts.select_next(),
-                Focus::RoomContactsArea => app.room_contacts.select_next(),
-                _ => {}
-            },
-            KeyCode::Up => match app.focus {
-                Focus::PeerContactsArea => app.peer_contacts.select_prev(),
-                Focus::RoomContactsArea => app.room_contacts.select_prev(),
-                _ => {}
-            },
+            KeyCode::Down => app.peer_contacts.select_next(),
+            KeyCode::Up => app.peer_contacts.select_prev(),
             _ => {}
         },
+        Event::Mouse(mouse) => match mouse.kind {
+            MouseEventKind::Down(MouseButton::Left) => {
+                let index = mouse.row - app.peer_contact_list_area.y - 1;
+                app.peer_contacts.select(Some(index as usize));
+                app.room_contacts.select(None);
+            }
+            _ => {}
+        },
+        _ => {}
+    }
+    Ok(Action::Continue)
+}
 
+fn handle_event_room_contact_area(app: &mut App, event: Event) -> io::Result<Action> {
+    match event {
+        Event::Key(key) if key.kind == KeyEventKind::Press => match key.code {
+            KeyCode::Down => app.room_contacts.select_next(),
+            KeyCode::Up => app.room_contacts.select_prev(),
+            _ => {}
+        },
+        Event::Mouse(mouse) => match mouse.kind {
+            MouseEventKind::Down(MouseButton::Left) => {
+                let index = mouse.row - app.room_contact_list_area.y - 1;
+                app.room_contacts.select(Some(index as usize));
+                app.peer_contacts.select(None);
+            }
+            _ => {}
+        },
+        _ => {}
+    }
+    Ok(Action::Continue)
+}
+
+fn handle_event_chat_area(app: &mut App, event: Event) -> io::Result<Action> {
+    unimplemented!();
+}
+
+async fn handle_event_input_box_area(app: &mut App, event: Event) -> io::Result<Action> {
+    if let Event::Key(key) = event {
+        if key.code == KeyCode::Enter {
+            let target = {
+                if let Some(peer_contact) = app.peer_contacts.selected() {
+                    peer_contact
+                } else if let Some(room_contact) = app.room_contacts.selected() {
+                    room_contact
+                } else {
+                    // ask to select a contact
+                    unimplemented!();
+                }
+            };
+            let lines = app.textarea.lines().join("\n");
+
+            let request = {
+                if target.contact_type == ContactType::Peer {
+                    Request::send_to_peer(&target.name, lines)
+                } else if target.contact_type == ContactType::Room {
+                    Request::send_to_room(&target.name, lines)
+                } else {
+                    unimplemented!()
+                }
+            };
+
+            app.client
+                .send(&request)
+                .await
+                .map_err(std::io::Error::other)?;
+
+            app.textarea.clear();
+        } else {
+            app.textarea.input(key);
+        }
+    }
+    Ok(Action::Continue)
+}
+
+async fn handle_event_login(app: &mut App, event: Event) -> io::Result<Action> {
+    if let Event::Key(key) = event {
+        if key.code == KeyCode::Enter {
+            let username = app.login_textarea.lines().join("\n").trim().to_string();
+            if !username.is_empty() {
+                app.client
+                    .login(&username)
+                    .await
+                    .map_err(std::io::Error::other)?;
+                app.username = Some(username);
+                app.logged_in = true;
+                app.focus = Focus::PeerContactsArea;
+            }
+        } else {
+            app.login_textarea.input(key);
+        }
+    }
+    Ok(Action::Continue)
+}
+
+pub async fn update_state(app: &mut App) -> io::Result<Action> {
+    let recorded_event = event::read()?;
+
+    match recorded_event {
         Event::Mouse(mouse) => match mouse.kind {
             MouseEventKind::Down(MouseButton::Left) => {
                 app.shift_focus(Position::new(mouse.column, mouse.row));
-
-                match app.focus {
-                    Focus::PeerContactsArea => {
-                        let index = mouse.row - app.peer_contact_list_area.y - 1;
-                        app.peer_contacts.select(Some(index as usize));
-                        app.room_contacts.select(None);
-                    }
-                    Focus::RoomContactsArea => {
-                        let index = mouse.row - app.room_contact_list_area.y - 1;
-                        app.room_contacts.select(Some(index as usize));
-                        app.peer_contacts.select(None);
-                    }
-                    _ => {}
-                }
             }
             _ => {}
         },
@@ -54,5 +130,13 @@ pub fn update_state(app: &mut App) -> io::Result<Action> {
         _ => {}
     };
 
-    Ok(Continue)
+    match app.focus {
+        Focus::Login => handle_event_login(app, recorded_event).await?,
+        Focus::PeerContactsArea => handle_event_peer_contact_area(app, recorded_event)?,
+        Focus::RoomContactsArea => handle_event_room_contact_area(app, recorded_event)?,
+        Focus::ChatArea => handle_event_chat_area(app, recorded_event)?,
+        Focus::InputBox => handle_event_input_box_area(app, recorded_event).await?,
+    };
+
+    Ok(Action::Continue)
 }

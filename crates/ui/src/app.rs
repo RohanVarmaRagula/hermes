@@ -1,10 +1,14 @@
 // state of the ui
 
 use crate::contacts::{PeerContacts, RoomContacts};
+use client::Client;
 use ratatui::layout::{Position, Rect};
+use ratatui_textarea::TextArea;
+use std::io::Result;
 
 #[derive(PartialEq)]
 pub enum Focus {
+    Login,
     PeerContactsArea,
     RoomContactsArea,
     ChatArea,
@@ -12,21 +16,35 @@ pub enum Focus {
 }
 
 pub struct App {
-    pub peer_contacts: PeerContacts,
-    pub room_contacts: RoomContacts,
+    pub logged_in: bool,
+    pub username: Option<String>,
+    pub login_textarea: TextArea<'static>,
     pub focus: Focus,
+
+    pub client: Client,
+
+    pub peer_contacts: PeerContacts,
     pub peer_contact_list_area: Rect,
+
+    pub room_contacts: RoomContacts,
     pub room_contact_list_area: Rect,
+
     pub chat_area: Rect,
+
     pub input_box_area: Rect,
+    pub textarea: TextArea<'static>,
 }
 
 impl App {
-    pub fn new() -> Self {
-        App {
+    pub async fn new(server_addr: &str) -> Result<Self> {
+        Ok(App {
+            logged_in: false,
+            username: None,
+            login_textarea: TextArea::default(),
+            focus: Focus::Login,
+            client: Client::connect(server_addr).await?,
             peer_contacts: PeerContacts::example(),
             room_contacts: RoomContacts::example(),
-            focus: Focus::PeerContactsArea,
             peer_contact_list_area: Rect {
                 x: 0,
                 y: 0,
@@ -51,7 +69,8 @@ impl App {
                 width: 0,
                 height: 0,
             },
-        }
+            textarea: TextArea::default(),
+        })
     }
 
     pub fn set_peer_contact_list_area(&mut self, peer_contact_list_area: Rect) {

@@ -18,7 +18,7 @@ pub struct Request {
 }
 
 impl Request {
-    fn new(command: Command, sender: String, target: String, message: String) -> Self {
+    pub fn new(command: Command, sender: String, target: String, message: String) -> Self {
         Self {
             command,
             sender,

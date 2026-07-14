@@ -2,13 +2,23 @@
 
 use ratatui::widgets::{ListItem, ListState};
 
+#[derive(PartialEq)]
+pub enum ContactType {
+    Peer,
+    Room,
+}
+
 pub struct Contact {
     pub name: String,
+    pub contact_type: ContactType,
 }
 
 impl Contact {
-    pub fn new(name: impl Into<String>) -> Self {
-        Self { name: name.into() }
+    pub fn new(name: impl Into<String>, contact_type: ContactType) -> Self {
+        Self {
+            name: name.into(),
+            contact_type: contact_type,
+        }
     }
 }
 
@@ -25,9 +35,7 @@ pub struct RoomContacts {
 impl PeerContacts {
     pub fn new(contacts: Vec<Contact>) -> Self {
         let mut list_state = ListState::default();
-        if contacts.len() > 0 {
-            list_state.select(Some(0));
-        }
+        list_state.select(None);
         PeerContacts {
             contacts,
             state: list_state,
@@ -36,15 +44,23 @@ impl PeerContacts {
 
     pub fn example() -> Self {
         Self::new(vec![
-            Contact::new("Alice"),
-            Contact::new("Bob"),
-            Contact::new("Chud"),
-            Contact::new("Dawg"),
+            Contact::new("Alice", ContactType::Peer),
+            Contact::new("Bob", ContactType::Peer),
+            Contact::new("Chud", ContactType::Peer),
+            Contact::new("Dawg", ContactType::Peer),
         ])
     }
 
     pub fn len(&self) -> usize {
         self.contacts.len()
+    }
+
+    pub fn selected(&self) -> Option<&Contact> {
+        if let Some(ind) = self.state.selected() {
+            Some(&self.contacts[ind])
+        } else {
+            None
+        }
     }
 
     pub fn select(&mut self, index: Option<usize>) {
@@ -96,9 +112,7 @@ impl PeerContacts {
 impl RoomContacts {
     pub fn new(contacts: Vec<Contact>) -> Self {
         let mut list_state = ListState::default();
-        if contacts.len() > 0 {
-            list_state.select(Some(0));
-        }
+        list_state.select(None);
         RoomContacts {
             contacts,
             state: list_state,
@@ -107,14 +121,22 @@ impl RoomContacts {
 
     pub fn example() -> Self {
         Self::new(vec![
-            Contact::new("Dawgs"),
-            Contact::new("Hbs"),
-            Contact::new("Kings House"),
+            Contact::new("Dawgs", ContactType::Room),
+            Contact::new("Hbs", ContactType::Room),
+            Contact::new("Kings House", ContactType::Room),
         ])
     }
 
     pub fn len(&self) -> usize {
         self.contacts.len()
+    }
+
+    pub fn selected(&self) -> Option<&Contact> {
+        if let Some(ind) = self.state.selected() {
+            Some(&self.contacts[ind])
+        } else {
+            None
+        }
     }
 
     pub fn select(&mut self, index: Option<usize>) {
