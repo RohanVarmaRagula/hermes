@@ -4,6 +4,8 @@ use std::{
 };
 
 pub enum Command {
+    AddPeer,
+    AddRoom,
     SetName,
     SendToPeer,
     SendToRoom,
@@ -36,6 +38,24 @@ impl Request {
         )
     }
 
+    pub fn add_peer(target: impl Into<String>) -> Self {
+        Self::new(
+            Command::AddPeer,
+            String::new(),
+            target.into(),
+            String::new(),
+        )
+    }
+
+    pub fn add_room(target: impl Into<String>) -> Self {
+        Self::new(
+            Command::AddRoom,
+            String::new(),
+            target.into(),
+            String::new(),
+        )
+    }
+
     pub fn send_to_peer(target: impl Into<String>, message: impl Into<String>) -> Self {
         Self::new(
             Command::SendToPeer,
@@ -58,6 +78,8 @@ impl Request {
 impl Display for Request {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> fmt::Result {
         let command = match self.command {
+            Command::AddPeer => "/add_peer",
+            Command::AddRoom => "/add_room",
             Command::SetName => "/name",
             Command::SendToPeer => "/msg",
             Command::SendToRoom => "/shout",
@@ -83,6 +105,8 @@ impl FromStr for Request {
         }
 
         let command = match words[0] {
+            "add_peer" => Command::AddPeer,
+            "add_room" => Command::AddRoom,
             "/name" => Command::SetName,
             "/msg" => Command::SendToPeer,
             "/shout" => Command::SendToRoom,
@@ -90,6 +114,32 @@ impl FromStr for Request {
         };
 
         match command {
+            Command::AddPeer => {
+                if words.len() != 2 {
+                    return Err("Usage: /add_peer <peername>".to_string());
+                }
+
+                Ok(Self::new(
+                    Command::AddPeer,
+                    String::new(),
+                    words[1].to_string(),
+                    String::new(),
+                ))
+            }
+
+            Command::AddRoom => {
+                if words.len() != 2 {
+                    return Err("Usage: /add_roome <roomename>".to_string());
+                }
+
+                Ok(Self::new(
+                    Command::AddRoom,
+                    String::new(),
+                    words[1].to_string(),
+                    String::new(),
+                ))
+            }
+
             Command::SetName => {
                 if words.len() != 2 {
                     return Err("Usage: /name <username>".to_string());

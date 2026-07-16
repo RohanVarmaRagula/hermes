@@ -5,7 +5,7 @@ use crate::{
     contacts::{Contact, ContactType},
 };
 use crossterm::event::{self, Event, KeyCode, KeyEventKind, MouseButton, MouseEventKind};
-use protocol::Request;
+use protocol::{Command, Request};
 use ratatui::layout::Position;
 use std::io;
 
@@ -60,21 +60,24 @@ fn handle_event_chat_area(app: &mut App, event: Event) -> io::Result<Action> {
 
 async fn handle_event_input_box_area(app: &mut App, event: Event) -> io::Result<Action> {
     if let Event::Key(key) = event {
-        if key.code == KeyCode::Enter {
+        if key.code == KeyCode::Enter && key.kind == KeyEventKind::Press {
             let target = {
                 if let Some(peer_contact) = app.peer_contacts.selected() {
                     peer_contact
                 } else if let Some(room_contact) = app.room_contacts.selected() {
                     room_contact
                 } else {
-                    // ask to select a contact
-                    unimplemented!();
+                    &Contact::new("None", ContactType::Peer)
                 }
             };
             let lines = app.textarea.lines().join("\n");
 
             let request = {
-                if target.contact_type == ContactType::Peer {
+                if lines[..9] == "/add_peer".to_string() {
+                    Request::add_peer(lines[10..].to_string())
+                } else if lines[..9] == "/add_room".to_string() {
+                    Request::add_room(lines[10..].to_string())
+                } else if target.contact_type == ContactType::Peer {
                     Request::send_to_peer(&target.name, lines)
                 } else if target.contact_type == ContactType::Room {
                     Request::send_to_room(&target.name, lines)
@@ -83,10 +86,27 @@ async fn handle_event_input_box_area(app: &mut App, event: Event) -> io::Result<
                 }
             };
 
-            app.client
-                .send(&request)
-                .await
-                .map_err(std::io::Error::other)?;
+            match request.command {
+                Command::AddPeer => {
+                    let contact = Contact::new(request.target, ContactType::Peer);
+                    if !app.peer_contacts.contacts.contains(&contact) {
+                        app.peer_contacts.contacts.push(contact);
+                    }
+                }
+                Command::AddRoom => {
+                    let contact = Contact::new(request.target, ContactType::Room);
+                    if !app.room_contacts.contacts.contains(&contact) {
+                        app.room_contacts.contacts.push(contact);
+                    }
+                }
+                Command::SendToPeer | Command::SendToRoom => {
+                    app.client
+                        .send(&request)
+                        .await
+                        .map_err(std::io::Error::other)?;
+                }
+                _ => {}
+            }
 
             app.textarea.clear();
         } else {

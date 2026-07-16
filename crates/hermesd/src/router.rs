@@ -13,6 +13,7 @@ pub async fn route_request(
         Command::SendToPeer => route_to_peer(user, server_state, request).await,
         Command::SendToRoom => route_to_room(user, server_state, request).await,
         Command::Unknown => Err(String::from("Unknown command")),
+        _ => Ok(()),
     }
 }
 

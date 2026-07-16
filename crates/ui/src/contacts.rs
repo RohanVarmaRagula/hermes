@@ -8,6 +8,7 @@ pub enum ContactType {
     Room,
 }
 
+#[derive(PartialEq)]
 pub struct Contact {
     pub name: String,
     pub contact_type: ContactType,
