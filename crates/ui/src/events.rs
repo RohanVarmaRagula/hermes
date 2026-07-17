@@ -73,10 +73,11 @@ async fn handle_event_input_box_area(app: &mut App, event: Event) -> io::Result<
             let lines = app.textarea.lines().join("\n");
 
             let request = {
-                if lines[..9] == "/add_peer".to_string() {
-                    Request::add_peer(lines[10..].to_string())
-                } else if lines[..9] == "/add_room".to_string() {
-                    Request::add_room(lines[10..].to_string())
+                let words: Vec<String> = lines.split_whitespace().map(str::to_string).collect();
+                if words[0] == "/add_peer" {
+                    Request::add_peer(words[1..].join("-"))
+                } else if words[0] == "/add_room" {
+                    Request::add_room(words[1..].join("-"))
                 } else if target.contact_type == ContactType::Peer {
                     Request::send_to_peer(&target.name, lines)
                 } else if target.contact_type == ContactType::Room {
@@ -121,6 +122,7 @@ async fn handle_event_login(app: &mut App, event: Event) -> io::Result<Action> {
         if key.code == KeyCode::Enter {
             let username = app.login_textarea.lines().join("\n").trim().to_string();
             if !username.is_empty() {
+                let username = username.replace(" ", "-");
                 app.client
                     .login(&username)
                     .await

@@ -141,8 +141,9 @@ impl FromStr for Request {
             }
 
             Command::SetName => {
+                println!("{:?}", words);
                 if words.len() != 2 {
-                    return Err("Usage: /name <username>".to_string());
+                    return Err("Usage: /name <username>\n".to_string());
                 }
 
                 Ok(Self::set_name(words[1]))

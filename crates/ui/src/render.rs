@@ -4,7 +4,7 @@ use crate::{app::App, settings::*};
 use ratatui::{
     Frame,
     layout::{Alignment, Constraint, Direction, Layout, Rect},
-    style::{Style, Styled},
+    style::{Style, Styled, Stylize},
     text::{Line, Text},
     widgets::{Block, Borders, List, Paragraph},
 };
@@ -26,7 +26,7 @@ pub fn render_peer_contacts(
             .block(
                 Block::bordered()
                     .title(
-                        Line::from("Contacts")
+                        Line::from("Friends")
                             .centered()
                             .style(Style::default().fg(TITLE)),
                     )
@@ -55,7 +55,7 @@ pub fn render_room_contacts(
             .block(
                 Block::bordered()
                     .title(
-                        Line::from("Contacts")
+                        Line::from("Rooms")
                             .centered()
                             .style(Style::default().fg(TITLE)),
                     )
@@ -141,22 +141,7 @@ pub fn render_login(frame: &mut Frame, area: Rect, app: &mut App) {
             .border_style(Style::default().fg(ACTIVE)),
     );
 
-    // If empty, show placeholder inside input area, otherwise render textarea
-    let content = app.login_textarea.lines().join("\n");
-    if content.trim().is_empty() {
-        let placeholder = Paragraph::new(Text::from(Line::from(" ")))
-            .block(
-                Block::default()
-                    .borders(Borders::ALL)
-                    .border_style(Style::default().fg(ACTIVE)),
-            )
-            .style(Style::default().fg(TEXT).bg(BG));
-
-        // render placeholder box then overlay the faint text
-        frame.render_widget(placeholder, input_cols[1]);
-    } else {
-        frame.render_widget(&app.login_textarea, input_cols[1]);
-    }
+    frame.render_widget(&app.login_textarea, input_cols[1]);
 
     let footer = Paragraph::new(Text::from(Line::from("Press Enter to continue")))
         .alignment(Alignment::Center)
